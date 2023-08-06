@@ -46,3 +46,21 @@ if process_clicked:
 
     with open(file_path, "wb") as f:
         pickle.dump(vectorstore_openai, f)
+        
+query = main_placeholder.text_input("Query: ")
+if query:
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            vectorstore = pickle.load(f)
+            chain = RetrievalQAWithSourcesChain.from_llm(llm=llm, retriever=vectorstore.as_retriever())
+            result = chain({"question": query}, return_only_outputs=True)
+            
+            st.header("Answer")
+            st.write(result["answer"])
+
+            sources = result.get("sources", "")
+            if sources:
+                st.subheader("References:")
+                sources_list = sources.split("\n")
+                for source in sources_list:
+                    st.write(source)
